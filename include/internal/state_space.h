@@ -8,8 +8,11 @@
 #include "georisk.h"
 #include "allocator.h"
 #include <string.h>
+#include <math.h>
 
+#ifndef GR_MAX_DIMENSIONS
 #define GR_MAX_DIMENSIONS 16
+#endif
 
 /* ============================================================================
  * Internal Dimension Structure
@@ -22,7 +25,7 @@ typedef struct gr_dimension_internal {
     double              max_value;
     double              current;
     int                 num_points;
-    double*             grid;      /* Precomputed grid points */
+    double*             grid;
 } gr_dimension_internal_t;
 
 /* ============================================================================
@@ -68,15 +71,6 @@ static inline void gr_dimension_free(gr_dimension_internal_t* dim, gr_context_t*
         gr_ctx_free(ctx, dim->grid);
         dim->grid = NULL;
     }
-}
-
-static inline char* gr_ctx_strdup(gr_context_t* ctx, const char* str)
-{
-    if (!str) return NULL;
-    size_t len = strlen(str) + 1;
-    char* dup = (char*)gr_ctx_malloc(ctx, len);
-    if (dup) memcpy(dup, str, len);
-    return dup;
 }
 
 /* ============================================================================
@@ -143,7 +137,6 @@ static inline size_t gr_state_space_nearest_index(
         const gr_dimension_internal_t* dim = &space->dims[d];
         double val = coords[d];
         
-        /* Find nearest grid point */
         int best = 0;
         double best_dist = 1e300;
         
@@ -160,5 +153,8 @@ static inline size_t gr_state_space_nearest_index(
     
     return gr_state_space_flat_index(space, indices);
 }
+
+/* gr_state_space_interpolate_price is implemented in state_space.c */
+double gr_state_space_interpolate_price(const gr_state_space_t* space, const double* coords);
 
 #endif /* GR_INTERNAL_STATE_SPACE_H */

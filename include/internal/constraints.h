@@ -1,5 +1,7 @@
 /**
  * internal/constraints.h - Constraint surface internals
+ * 
+ * Note: gr_constraint_type_t is defined in georisk.h (public API)
  */
 
 #ifndef GR_INTERNAL_CONSTRAINTS_H
@@ -9,19 +11,13 @@
 #include <math.h>
 #include <string.h>
 
+#ifndef GR_MAX_CONSTRAINTS
 #define GR_MAX_CONSTRAINTS 64
+#endif
 
 /* ============================================================================
- * Constraint Types
+ * Additional Constraint Enums (internal use)
  * ============================================================================ */
-
-typedef enum gr_constraint_type {
-    GR_CONSTRAINT_LIQUIDITY,
-    GR_CONSTRAINT_POSITION_LIMIT,
-    GR_CONSTRAINT_MARGIN,
-    GR_CONSTRAINT_REGULATORY,
-    GR_CONSTRAINT_CUSTOM
-} gr_constraint_type_t;
 
 typedef enum gr_constraint_hardness {
     GR_CONSTRAINT_HARD,
@@ -35,7 +31,6 @@ typedef enum gr_constraint_direction {
     GR_CONSTRAINT_EQUALITY
 } gr_constraint_direction_t;
 
-/* Custom constraint evaluation function */
 typedef double (*gr_constraint_eval_fn)(const double* coords, int num_dims, void* user_data);
 
 /* ============================================================================
@@ -46,15 +41,11 @@ typedef struct gr_constraint {
     gr_constraint_type_t      type;
     char                      name[64];
     int                       active;
-    
-    /* Simple threshold constraint */
     int                       dimension;
     gr_constraint_direction_t direction;
     double                    threshold;
     gr_constraint_hardness_t  hardness;
     double                    penalty_rate;
-    
-    /* Custom constraint */
     gr_constraint_eval_fn     eval_fn;
     void*                     user_data;
 } gr_constraint_t;

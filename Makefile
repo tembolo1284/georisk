@@ -14,6 +14,7 @@ LIB_DIR     := $(BUILD_DIR)/lib
 BIN_DIR     := $(BUILD_DIR)/bin
 
 PREFIX      ?= /usr/local
+USER_LIB    := $(HOME)/libraries
 
 CC          := gcc
 AR          := ar
@@ -59,13 +60,19 @@ UNITY_OBJ   := $(OBJ_DIR)/test/unity.o
 # Targets
 # ============================================================================
 
-.PHONY: all shared static test clean dirs info
+.PHONY: all shared static test clean dirs info install
 
 all: shared
 
 shared: dirs $(LIB_DIR)/$(LIB_SHARED)
+	@mkdir -p $(USER_LIB)
+	@cp $(LIB_DIR)/$(LIB_SHARED) $(USER_LIB)/
+	@echo "  COPY  $(USER_LIB)/$(LIB_SHARED)"
 
 static: dirs $(LIB_DIR)/$(LIB_STATIC)
+	@mkdir -p $(USER_LIB)
+	@cp $(LIB_DIR)/$(LIB_STATIC) $(USER_LIB)/
+	@echo "  COPY  $(USER_LIB)/$(LIB_STATIC)"
 
 dirs:
 	@mkdir -p $(OBJ_DIR)/core
@@ -131,6 +138,19 @@ $(UNITY_OBJ): $(UNITY_SRC)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # ============================================================================
+# Install (system-wide)
+# ============================================================================
+
+install: shared static
+	@echo "Installing to $(PREFIX)..."
+	@mkdir -p $(PREFIX)/lib
+	@mkdir -p $(PREFIX)/include
+	@cp $(LIB_DIR)/$(LIB_SHARED) $(PREFIX)/lib/
+	@cp $(LIB_DIR)/$(LIB_STATIC) $(PREFIX)/lib/
+	@cp $(INC_DIR)/georisk.h $(PREFIX)/include/
+	@echo "  Done."
+
+# ============================================================================
 # Utility
 # ============================================================================
 
@@ -141,3 +161,4 @@ clean:
 info:
 	@echo "Sources: $(SRCS)"
 	@echo "Objects: $(OBJS)"
+	@echo "User library dir: $(USER_LIB)"

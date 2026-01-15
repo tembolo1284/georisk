@@ -29,15 +29,8 @@ typedef struct gr_fragility_config {
 } gr_fragility_config_t;
 
 #define GR_FRAGILITY_CONFIG_DEFAULT { \
-    .gradient_weight = 0.25,          \
-    .curvature_weight = 0.30,         \
-    .condition_weight = 0.25,         \
-    .constraint_weight = 0.20,        \
-    .gradient_scale = 1.0,            \
-    .curvature_scale = 1.0,           \
-    .condition_threshold = 100.0,     \
-    .constraint_threshold = 0.1,      \
-    .fragility_threshold = 0.5        \
+    0.25, 0.30, 0.25, 0.20,           \
+    1.0, 1.0, 100.0, 0.1, 0.5         \
 }
 
 /* ============================================================================
@@ -118,7 +111,7 @@ static inline const char* gr_region_type_string(gr_region_type_t type)
 static inline double gr_fragility_from_gradient(double norm, double scale)
 {
     double x = norm / scale;
-    return x / (1.0 + x);  /* Sigmoid-like: approaches 1 as norm -> infinity */
+    return x / (1.0 + x);
 }
 
 static inline double gr_fragility_from_curvature(double frobenius, double scale)
@@ -130,7 +123,7 @@ static inline double gr_fragility_from_curvature(double frobenius, double scale)
 static inline double gr_fragility_from_conditioning(double condition, double threshold)
 {
     if (condition < 1.0) return 0.0;
-    return log(condition) / log(threshold);  /* 0 at cond=1, 1 at cond=threshold */
+    return log(condition) / log(threshold);
 }
 
 static inline double gr_fragility_from_constraint(double distance, double threshold)
@@ -170,7 +163,6 @@ static inline gr_error_t gr_fragility_map_add_point(
     gr_context_t* ctx = map->ctx;
     int n = map->space->num_dims;
     
-    /* Grow capacity if needed */
     if (map->num_points >= map->capacity) {
         size_t new_cap = map->capacity == 0 ? 64 : map->capacity * 2;
         gr_fragility_point_t* new_pts = (gr_fragility_point_t*)gr_ctx_realloc(
